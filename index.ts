@@ -1,122 +1,115 @@
-// annotation
-let obj : object 
+// function standard
+function divide (a: number, b: number): number {
+    return a / b;
+}
 
-// En JavaScript/TypeScript,tout est un objet
-obj = {}
-obj = {name: "tom"}
-obj = () => {}
-obj = [1, 2, 3]
+// fonction fléchée 
+const sub = (a: number, b: number): number => a - b
 
-//objet instantié par une class 
-class Coder {
-    name: string;
-    constructor(name: string){
-        this.name = name
+
+// inférence sur le type retourné (!! déconseillé !!)
+const multiply = (a : number, b: number) => a * b
+
+
+// alias
+type MathFunction = (a: number, b: number) => number 
+
+
+// paramètre(s) otpionnel(s) 
+const concat = (a: string, b: string, c?: string): string => {
+    if(typeof c !== "undefined"){
+        return a + " " + b + " " + c 
+    } 
+
+    return a + " " + b
+}
+
+// paramètre(s) par défaut 
+const add = (a: number, b : number, c: number = 2): number => {
+    return a + b + c
+}
+
+// paramètre rest 
+
+const salute = (greet : string, ...names : string[]) : string => {
+    return `${greet} ${names.join(" ")}`
+}
+
+
+
+// le type void
+const log = (message : string): void => {
+    console.log(message)
+}
+
+
+// le type never
+
+// const infinite = () => {
+//     let i  = 0;
+//     while(true){
+//         i++
+//     }
+// }
+
+const createError = (msg: string) : never => {
+    throw new Error(msg)
+}
+
+const check  = (value: boolean): string => {
+    if(value) return "Correct !"
+    return createError("il y a eu une erreur")
+}
+
+// callbacks
+function arrayMutate(arr : number[], mutate: (v: number) => number): number[]{
+    return arr.map(mutate)
+}
+
+console.log(arrayMutate([1, 2, 3, 4,], v => v *10))
+console.log(arrayMutate([1, 2, 3, 4 ], v => v * 100))
+
+// promesses 
+const createUser = (name : string) : Promise<string> => {
+    return new Promise((resolve : (val: string) => void) => {
+        setTimeout(() => {
+            resolve(`user: ${name}`)
+        }, 2000)
+    })
+}
+
+createUser("Paul").then(val => console.log(val))
+
+
+// fonctions curry 
+const adder = (a : number) => {
+    return (b: number) => {
+        return  a + b
     }
 }
 
-const coder1: Coder = new Coder("Tom")
+const addFive = adder(5)
 
-// Objets littéraux 
-const coord : {x: number, y : number} = {x : 1, y: 2}
-
-// Inférence 
-const user = {
-    name: "paul",
-    age: 23,
-    active: true
-}
-
-user.age = "24"
-user.profile 
+addFive(3)
+addFive(4)
 
 
-const getUserInfo = (user : {name: string, age: number, active: boolean}) => {
-    console.log(user.name)
-    console.log(user.age)
-    console.log(user.active)
-}
-
-
-// Alias 
-
-type Developer = {
-    name : string,
-    language: string, 
-    experience: number
-}
-
-type Student = {
-    school: string 
-}
-
-// Intersection
-const studentDev : Developer & Student = {
-    name: "zoé" ,
-    language: "php",
-    experience: 2,
-    school: "Université de Bordeaux"
-}
-
-let jsDev : Developer =  {
-    name: "Alex",
-    language: "JavaScript",
-    experience: 4
-}
-
-let javaDev : Developer = {
-    name: "Paul",
-    language: "Java",
-    experience: 12
-}
-
-javaDev.active 
-javaDev.language = 23
-
-const getDevInfo = (dev : Developer) => {
-    console.log(dev.name)
-    console.log(dev.language)
-    console.log(dev.experience)
-}
-
-
-// les alias ne servent pas que pour les objets 
-
-type text = string 
-
-const hello: text = "hello"
-
-type stringOrBoolean = number | string 
-
-let id : stringOrBoolean = "1"
-let id2 : stringOrBoolean = 233
-
-
-type DevFunc = (name: string, languag: string, experience: 12) => Developer 
-
-const createDev : DevFunc = (name, language, experience ) => {
-    return {name, language, experience}
-}
-
-
-// destructuration
-
-const profile = {
-    username: "tom",
-    age: 20,
-    location: {
-        lat: 40,
-        lng: 52
-    },
-    setAge(age: number){
-        this.age = age
+// closure 
+const decrementer = (initial : number ) => {
+    let value = initial 
+    return () => {
+        value -= 10;
+        if(value > 0){
+            console.log(`Il vous reste ${value}`)
+        } else {
+            console.log(`Votre compte est vide`)
+        }
     }
 }
 
-const {age} : {age: number} = profile 
-console.log(age)
+const charge = decrementer(200)
 
-
-const {location: {lat, lng}} : {location: {lat: number, lng: number}} = profile
-
-console.log(lat, lng)
+charge()
+charge()
+charge()
+charge()
