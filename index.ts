@@ -1,84 +1,88 @@
-// "Primitives"  
-let myname : string = "Paul"
-let score : number = 12 
-let isActive : boolean = true;
+// annotations
+let temperature : number[] = [9, 8, 4, -2]
+let names : string[] = ["tom", "zoe", "alex"]
+let prices : Array<number> = [23.69, 19.99, 12.99]
+// tableau avec union 
+let dates : (Date | string)[] = [new Date(), new Date("07/06/2O22"), "2023-11-08"]
+// tableau à 2 dimensions
+let twoDimensional : boolean[][] = [[true, false, true], [true, true, false]]
 
-// Cas particuliers où le type et la valeur sont identiques
-let nothing: null = null 
-let indefini: undefined = undefined 
 
 
-// "Structures" (instantiables avec le mot-clé new)
-let categories : string[] = ["films", "musique", "livres"]
-let temperatures : number[] = [20, -9, 4, 0, 9]
-let phone : RegExp = /^(0|\+33)[1-9]([-.: ]?[0-9]{2}){4}$/
-let today : Date = new Date() 
-class User {
+// inférences 
+let cities = ["paris", "nantes", "marseille"]
+let departments = ["gard", "jura", "lot", 78, 91]
+let narbonne = ["aude", 11, true]
 
+
+cities[0] = 23
+departments.push(42)
+departments.unshift(true)
+
+// Hiérarchie des types 
+cities = departments
+departments = cities
+
+cities = narbonne
+departments = narbonne
+narbonne = cities 
+narbonne = departments
+
+
+// initialisation 
+let tableau = []
+tableau.push(true)
+tableau.push("hey")
+
+let categories : string[] = []
+categories.push("livres")
+
+
+// méthode d'ordre supérieur 
+let users = [{name: "paul", age: 20}, {name: "tom", age: 33}, {name: "zoe", age : 28}]
+let usernames = users.map(user => {
+    return user.name
+})
+
+
+// tuples (tableau ordonné) 
+let rennes: [string, number, boolean] = ["Bretagne", 35, true]
+
+rennes[1] = 42
+
+// impossible de passer la référence ici puisque "narbonne" est un tableau standard (donc non ordonné)
+rennes = narbonne
+
+// tuples au sein des fonctions
+function addCoord (a : [x: number, y: number], b: [x: number, y : number]): [x: number, y : number]{
+    return [
+        a[0] + b[0],
+        a[1] + b[1]
+    ]
 }
 
-const tom : User = new User()
-
-// objects littéraux (pas instancié par une classe)
-let coordinates : {x: number, y: number} = {x: 2, y: 3}
-
-// fonctions 
-const sum : (a: number, b:number) => number = (a, b) => {
-    return a + b
-}
-
-// le type any 
-// il revient à faire un usage faiblement typé (= JavaScript standard) 
-// En Typescript, le but va donc être d'éviter le plus possible ce type
-let anything : any = 0
-anything = "0"
-anything = false 
-anything = [0]
-
-
-// inférence
-// Typescript est capable de déduire le type d'une variable 
-// Seuleuement lorsque une valeur est renseignée au moment de l'initialisation
-let username = "quentin" 
-username = 19
-
-let password; 
-
-password = 123 
-password = "123-$" 
-
-
-// Quand doit-on ajouter des annotations ?
-
-// #1 lorsque on déclare une variable sans l'initialiser 
-let adult : boolean
-
-const test = (age : number) => {
-    if(age > 18){
-        adult = true 
-    } else {
-        adult = false
-    }
-}
-
-// #2 lorsque un variable peut avoir plusieurs types, c'est le cas par exemple des unions 
-let selectedRoom : number | null = null 
-let availableRooms = [2, 22, 2, 9]
-
-const checkAvailable = (input: number) => {
-    for (let i = 0; i < availableRooms.length; i++){
-        if(availableRooms[i] === input){
-            selectedRoom = input
+// fonction de state pour les chaînes de caractères
+function stringState(initial: string): [() => string, (v: string) => void]{
+    // closure
+    let str: string = initial 
+    return [
+        () => str,
+        (v: string) => {
+            str = v
         }
-    }
+    ]
 }
 
-// #3 lorsque le type retourné par une fonction est inconnu 
-const id = '{"value" : 2293939292}'
+const [firstname, setFirstName] = stringState("Bob")
+const [lastName, setLastName] = stringState("Marley")
 
-const parsedId : {data : number} = JSON.parse(id)
 
-console.log(parsedId.value)
-console.log(parsedId.data)
+console.log(firstname())
+setLastName("Dylan")
+console.log(lastName())
+console.log(firstname())
+
+
+
 
 
