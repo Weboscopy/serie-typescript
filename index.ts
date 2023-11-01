@@ -1,68 +1,84 @@
-// Typescript est un langage fortement typé
-// One ne peut pas changer le type d'une variable après déclaration
-// Typescript est un langage statique 
-// Le type d'une variable est connu au moment de la compilation du code 
+// "Primitives"  
+let myname : string = "Paul"
+let score : number = 12 
+let isActive : boolean = true;
 
-// Intro
-let id : string = "#12"
+// Cas particuliers où le type et la valeur sont identiques
+let nothing: null = null 
+let indefini: undefined = undefined 
 
-console.log(id)
 
-console.log(typeof id)
+// "Structures" (instantiables avec le mot-clé new)
+let categories : string[] = ["films", "musique", "livres"]
+let temperatures : number[] = [20, -9, 4, 0, 9]
+let phone : RegExp = /^(0|\+33)[1-9]([-.: ]?[0-9]{2}){4}$/
+let today : Date = new Date() 
+class User {
 
-id = 12
-
-console.log(typeof id)
-
-// Erreur 1
-type Item  = {
-    name: string
-    desc: string 
-    price : string
 }
 
-const item1 : Item = {
-    name: "t-shirt",
-    desc: "un super t-shirt",
-    price: "12 €"
+const tom : User = new User()
+
+// objects littéraux (pas instancié par une classe)
+let coordinates : {x: number, y: number} = {x: 2, y: 3}
+
+// fonctions 
+const sum : (a: number, b:number) => number = (a, b) => {
+    return a + b
 }
 
-let cart : number = 0;
+// le type any 
+// il revient à faire un usage faiblement typé (= JavaScript standard) 
+// En Typescript, le but va donc être d'éviter le plus possible ce type
+let anything : any = 0
+anything = "0"
+anything = false 
+anything = [0]
 
-const addItemToCart = (item : Item) => {
-    cart += item.price
+
+// inférence
+// Typescript est capable de déduire le type d'une variable 
+// Seuleuement lorsque une valeur est renseignée au moment de l'initialisation
+let username = "quentin" 
+username = 19
+
+let password; 
+
+password = 123 
+password = "123-$" 
+
+
+// Quand doit-on ajouter des annotations ?
+
+// #1 lorsque on déclare une variable sans l'initialiser 
+let adult : boolean
+
+const test = (age : number) => {
+    if(age > 18){
+        adult = true 
+    } else {
+        adult = false
+    }
 }
 
+// #2 lorsque un variable peut avoir plusieurs types, c'est le cas par exemple des unions 
+let selectedRoom : number | null = null 
+let availableRooms = [2, 22, 2, 9]
 
-// Erreur 2 
-
-type Post = {
-    title: string  
-    desc : string
-}
-const post : Post = {
-    title : "Les pires erreurs en js",
-    desc: "Il arrive férquement d'utiliser une propriété qui n'exist pas sur un objet"
-}
-
-const logContent = (post : Post) => {
-    console.log(`Description : ${post.description}`)
-}
-
-logContent(post)
-
-
-// Erreur 3
-
-type logUserInfoFunc = (loggedIn: boolean, username: string,  password: number) => void 
-
-
-const logUserInfo : logUserInfoFunc= (username, password, loggedIn) => {
-        if(loggedIn){
-            console.log(username, password)
+const checkAvailable = (input: number) => {
+    for (let i = 0; i < availableRooms.length; i++){
+        if(availableRooms[i] === input){
+            selectedRoom = input
         }
+    }
 }
 
-logUserInfo("tom", 123, true)
+// #3 lorsque le type retourné par une fonction est inconnu 
+const id = '{"value" : 2293939292}'
+
+const parsedId : {data : number} = JSON.parse(id)
+
+console.log(parsedId.value)
+console.log(parsedId.data)
 
 
