@@ -1,88 +1,122 @@
-// annotations
-let temperature : number[] = [9, 8, 4, -2]
-let names : string[] = ["tom", "zoe", "alex"]
-let prices : Array<number> = [23.69, 19.99, 12.99]
-// tableau avec union 
-let dates : (Date | string)[] = [new Date(), new Date("07/06/2O22"), "2023-11-08"]
-// tableau à 2 dimensions
-let twoDimensional : boolean[][] = [[true, false, true], [true, true, false]]
+// annotation
+let obj : object 
 
+// En JavaScript/TypeScript,tout est un objet
+obj = {}
+obj = {name: "tom"}
+obj = () => {}
+obj = [1, 2, 3]
 
-
-// inférences 
-let cities = ["paris", "nantes", "marseille"]
-let departments = ["gard", "jura", "lot", 78, 91]
-let narbonne = ["aude", 11, true]
-
-
-cities[0] = 23
-departments.push(42)
-departments.unshift(true)
-
-// Hiérarchie des types 
-cities = departments
-departments = cities
-
-cities = narbonne
-departments = narbonne
-narbonne = cities 
-narbonne = departments
-
-
-// initialisation 
-let tableau = []
-tableau.push(true)
-tableau.push("hey")
-
-let categories : string[] = []
-categories.push("livres")
-
-
-// méthode d'ordre supérieur 
-let users = [{name: "paul", age: 20}, {name: "tom", age: 33}, {name: "zoe", age : 28}]
-let usernames = users.map(user => {
-    return user.name
-})
-
-
-// tuples (tableau ordonné) 
-let rennes: [string, number, boolean] = ["Bretagne", 35, true]
-
-rennes[1] = 42
-
-// impossible de passer la référence ici puisque "narbonne" est un tableau standard (donc non ordonné)
-rennes = narbonne
-
-// tuples au sein des fonctions
-function addCoord (a : [x: number, y: number], b: [x: number, y : number]): [x: number, y : number]{
-    return [
-        a[0] + b[0],
-        a[1] + b[1]
-    ]
+//objet instantié par une class 
+class Coder {
+    name: string;
+    constructor(name: string){
+        this.name = name
+    }
 }
 
-// fonction de state pour les chaînes de caractères
-function stringState(initial: string): [() => string, (v: string) => void]{
-    // closure
-    let str: string = initial 
-    return [
-        () => str,
-        (v: string) => {
-            str = v
-        }
-    ]
+const coder1: Coder = new Coder("Tom")
+
+// Objets littéraux 
+const coord : {x: number, y : number} = {x : 1, y: 2}
+
+// Inférence 
+const user = {
+    name: "paul",
+    age: 23,
+    active: true
 }
 
-const [firstname, setFirstName] = stringState("Bob")
-const [lastName, setLastName] = stringState("Marley")
+user.age = "24"
+user.profile 
 
 
-console.log(firstname())
-setLastName("Dylan")
-console.log(lastName())
-console.log(firstname())
+const getUserInfo = (user : {name: string, age: number, active: boolean}) => {
+    console.log(user.name)
+    console.log(user.age)
+    console.log(user.active)
+}
 
 
+// Alias 
+
+type Developer = {
+    name : string,
+    language: string, 
+    experience: number
+}
+
+type Student = {
+    school: string 
+}
+
+// Intersection
+const studentDev : Developer & Student = {
+    name: "zoé" ,
+    language: "php",
+    experience: 2,
+    school: "Université de Bordeaux"
+}
+
+let jsDev : Developer =  {
+    name: "Alex",
+    language: "JavaScript",
+    experience: 4
+}
+
+let javaDev : Developer = {
+    name: "Paul",
+    language: "Java",
+    experience: 12
+}
+
+javaDev.active 
+javaDev.language = 23
+
+const getDevInfo = (dev : Developer) => {
+    console.log(dev.name)
+    console.log(dev.language)
+    console.log(dev.experience)
+}
 
 
+// les alias ne servent pas que pour les objets 
 
+type text = string 
+
+const hello: text = "hello"
+
+type stringOrBoolean = number | string 
+
+let id : stringOrBoolean = "1"
+let id2 : stringOrBoolean = 233
+
+
+type DevFunc = (name: string, languag: string, experience: 12) => Developer 
+
+const createDev : DevFunc = (name, language, experience ) => {
+    return {name, language, experience}
+}
+
+
+// destructuration
+
+const profile = {
+    username: "tom",
+    age: 20,
+    location: {
+        lat: 40,
+        lng: 52
+    },
+    setAge(age: number){
+        this.age = age
+    }
+}
+
+const {age} : {age: number} = profile 
+console.log(age)
+
+
+const {location: {lat, lng}} : {location: {lat: number, lng: number}} = profile
+
+console.log(lat, lng)
