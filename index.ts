@@ -1,162 +1,228 @@
-// signature d'index
-interface FlexibleCategories  {
-    readonly [key: string] : number  
-    films: number 
-    musics: number 
+// Capitalize 
+type Loading = "loading"
+
+const loadingText : `${Capitalize<Loading>}...` = "Loading..."
+
+// Record 
+
+type CategoryObject = {
+    desc: string,
+    count: number
+}
+
+type Categories = {
+    filmm: number,
+    musics: number,
+    books: number
+}
+
+type categoriesUnion = "films" | "musics" | "books"
+
+
+type mappedCategories1 = {
+    // [K in categoriesUnion] : CategoryObject
+    [K in keyof Categories]: CategoryObject
 }
 
 
-const categories1 : FlexibleCategories  = {
-    films: 299,
-    musics: 120,
-    books: 20,
-    games: 10,
-    videos: 29
+type mappedCategories2 = Record<keyof Categories, CategoryObject>
+
+
+const ids: Record<number, string> = {
+    10: "A",
+    20: "B"
 }
 
-// categories.films = 30
+type MyRecord <T extends string, U>  = Record<T ,U> 
 
+type mappedCategories3 = MyRecord<categoriesUnion, CategoryObject>
+
+
+
+interface  User {
+    id: number,
+    username: string,
+    email: string
+    img?: string
+    phone?: number
+}
+
+
+// Partial 
+const updateUser = (user: User, props: Partial<User>): User => {
+    return { ...user, ...props }
+}
+
+
+// Required 
+const requiredUser: Required<User> = {
+    id: 23,
+    username: "Bob",
+    email: "bob@mail.com",
+    img: "default.jpg",
+    phone: 339294839
+}
+
+// Pick 
+type idAndEmail = Pick<User, "id" | "email">
+
+// Omit 
+type UserPreview = Omit<User, "id" | "email" | "phone">
+
+
+// Téléphone requis pour certains utilisateurs
+let UserWithPhone: User & Required<Pick<User, "phone">> = {
+    id: 23,
+    username: "bob",
+    email: "bob@mail.com",
+    phone: 39394994
+}
+
+// Record - type à partir du champ
+const mappedById = (users: User[]): Record<User["id"], Omit<User, "id">> => {
+    return users.reduce((acc, curr) => {
+        const {id, ...rest} = curr
+        return {
+            ...acc, 
+            [id]: rest
+        }
+    }, {})
+}
+
+console.log(
+    mappedById([
+        {
+            id: 1,
+            username: "paul",
+            email: "paul@mail.com"
+        },
+        {
+            id: 2,
+            username: "tom",
+            email: "tom@mail.com"
+        }
+    ])
+)
+
+
+// Readonly 
+type immutableUser = Readonly<User>
+
+const immUser: immutableUser = {
+    id: 394,
+    username: "bob",
+    email: "bob@mail.com"
+}
+
+// immUser.id = 334
+
+// Extract 
+type Grades = "A" | "B" | "C" | "D" | "E" | "F"
+
+type BestGrades = Extract<Grades, "A" | "B">
+
+// Exclude 
+type Admitted = Exclude<Grades, "F">
+
+// NonNullable 
+type Status = "loading" | "pending" | "rejected" | null | undefined
+type viableSatus = NonNullable<Status>
+
+// Return type 
+
+function getEmails(users: User[]) {
+    return users.map(user => user.email)
+}
+
+
+const emails: ReturnType<typeof getEmails> = getEmails(
+    [
+        { id: 1, username: "paul", email: "paul@mail.com" },
+        { id: 2, username: "tom", email: "tom@mail.com" }
+    ]
+)
+
+// Params 
+function createUser (id: number, username: string, email: string ): User{
+    return {id, username, email}
+}
+
+const args : Parameters<typeof createUser> = [1, "paul", "paul@mail.com"]
+
+createUser(...args)
+
+function createUsers(
+    data: Parameters<typeof createUser>[]
+): ReturnType<typeof createUser>[] {
+    return data.map(item => createUser(...item))
+}
+
+
+function createMany <T extends (...args : any[]) => any > (
+    create : T, 
+    data: Parameters<T>[]
+) : ReturnType<T>[]{
+    return data.map(item => create(...item))
+}
+
+const users = createMany(createUser, [ [1, "paul", "paul@mail.com"], [2, "zoe", "zoe@mail.com"]])
  
-interface  RigidCategory {
-    films: number 
-    books: number 
-    games: number
-}
+console.log(users)
 
 
-const categories2 : RigidCategory  = {
-    films: 299,
-    books: 20,
-    games: 10,
-}
+class Developer {
+    constructor (public firstName: string, public lastName: string) {}
 
-categories1.books 
-categories1["books"]
-let prop1 : string= "books"
-categories1[prop1]
-categories1.anything 
-
-
-categories2.books
-categories2["books"]
-// let prop2: string = "books"
-// let prop2: 'books' = "books"
-const prop2 = "books"
-categories2[prop2]
-// categories2.anything 
-
-
-
-const sum1 = (categories: FlexibleCategories) : number => {
-    let total = 0
-    for(const category in categories){
-        total += categories[category]
+    get fullName(){
+        return `${this.firstName} ${this.lastName}`
     }
+}
 
-    return total 
+const createDevs = (
+    data: ConstructorParameters<typeof Developer>[] 
+) : InstanceType<typeof Developer>[] => {
+    return data.map(item => new Developer(...item))
 }
 
 
-const sum2 = (categories: RigidCategory) : number => {
-    let total = 0
-    for(const category in categories){
-        // total += categories[category as keyof RigidCategory] 
-        total += categories[category as keyof typeof categories] 
-    }
-
-    return total 
+const createObjects =  <T extends new (...args: any[]) => any > (
+    jsClass : T, 
+    data: ConstructorParameters<T>[] 
+) : InstanceType<T>[] => {
+    return data.map(item => new jsClass(...item))
 }
 
 
-interface User {
-    [key: string] : string  | number | string[] | undefined
-    username: string 
-    img?: string 
-    id: number 
-    skills?: string[]
+console.log(
+    createObjects(Developer, [["bob", "dylan"], ["bob", "marley"]]).map(
+        dev => dev.fullName
+    )
+
+)
+
+interface Post {
+    userId: number, 
+    id: number, 
+    title: string,
+    body: string
 }
 
 
-// type mappé
-type CategoryObj = {
-    description: string 
-    count: number 
+// Awaited
+const fetchPosts = async (): Promise<Post[]> => {
+    const data = await fetch("https://jsonplaceholder.typicode.com/posts")
+        .then(res => res.json())
+        .catch(err => {
+            if(err instanceof Error) console.log(err.message)
+        })
+
+        return data
+    
 }
 
- type categoryUnions = "books" | "films" | "musics"
-
-type MappedCategory = {
-    [K in categoryUnions ] : CategoryObj
-}
-
-
-type MappedCategory2 = {
-    [K in keyof RigidCategory] : CategoryObj
-}
-
-const mapped2 : MappedCategory2 = {
-    books: {description: "Catégorie pour les livres", count: 30},
-    films: {description: "Catégorie pour les films", count: 20},
-    games: {description: "Catégorie pour les jeux", count: 40},
-}
-
-// Type mappé générique
-type MappedCategory3<T, U> = {
-    [K in keyof T] : U
-}
+(async () => {
+    let posts : Awaited<ReturnType<typeof fetchPosts>> = await fetchPosts()
+    console.log(posts)
+})()
 
 
-type FrenchCategories = {
-    livres: number, 
-    films: number, 
-    jeux: number
-}
-
-const mapped3 : MappedCategory3<FrenchCategories, boolean> = {
-    livres: true,
-    films: false,
-    jeux: true
-}
-
-
-// cas d'utilisation
-
-
-type Student = {
-    name: string 
-    score: number
-}
-
-const student1 = {
-    name: "paul", 
-    score: 120
-}
-
-type StudentSetters = {
-    [ K in keyof Student as `set${Capitalize<K>}`] : (v: Student[K]) => void 
-}
-
-type Setters<T> = {
-    [K in keyof T as `set${Capitalize<string & K>}`]: (v : T[K]) => void
-}
-
-
-const attachSetters = <T extends object> (
-    emptyObj: object,  
-    obj: T, 
-    setters : Setters<T>
-) : T & Setters<T> => {
-    return  Object.assign(emptyObj ,obj, setters)
-}
-
-
-const studentWithSetter = {} as Student & Setters<Student>
-
-attachSetters(studentWithSetter, student1, {
-    setName : (v: string) => studentWithSetter.name = v,
-    setScore : (v: number) => studentWithSetter.score = v 
-})
-
-studentWithSetter.setName("tom")
-console.log(student1)
-console.log(studentWithSetter)
