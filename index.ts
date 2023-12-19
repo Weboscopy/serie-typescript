@@ -1,153 +1,162 @@
-type User = {
-    id: number,
-    username: string,
-    email: string
+// signature d'index
+interface FlexibleCategories  {
+    readonly [key: string] : number  
+    films: number 
+    musics: number 
 }
 
-type Product = {
-    id: number,
-    productName: string,
-    price: number
+
+const categories1 : FlexibleCategories  = {
+    films: 299,
+    musics: 120,
+    books: 20,
+    games: 10,
+    videos: 29
 }
 
-interface HasId {
-    id: number
+// categories.films = 30
+
+ 
+interface  RigidCategory {
+    films: number 
+    books: number 
+    games: number
 }
 
-// Contrainte 
-// le type générique T doit avoir une propriété id de type nombre
-class Collection<T extends HasId> {
-    constructor(public data: T[]) { }
 
-    findOne(id: number): T {
-        const el = this.data.find(v => v.id === id)
-        if (el) {
-            return el
-        }
+const categories2 : RigidCategory  = {
+    films: 299,
+    books: 20,
+    games: 10,
+}
 
-        throw new Error("The item does not exist")
+categories1.books 
+categories1["books"]
+let prop1 : string= "books"
+categories1[prop1]
+categories1.anything 
+
+
+categories2.books
+categories2["books"]
+// let prop2: string = "books"
+// let prop2: 'books' = "books"
+const prop2 = "books"
+categories2[prop2]
+// categories2.anything 
+
+
+
+const sum1 = (categories: FlexibleCategories) : number => {
+    let total = 0
+    for(const category in categories){
+        total += categories[category]
     }
-}
 
-const userCollection = new Collection<User>([
-    { id: 1, username: "Paul", email: "paul@mail.com" },
-    { id: 2, username: "tom", email: "tom@mail.com" }
-]
-)
-
-console.log(userCollection.findOne(2))
-
-
-let categories : string[] = []
-
-let transaction1 = {shirt: 40, baskets: 90, tShirt: 40}
-let transaction2 = {films: 20, books: 10, games: 40}
-
-// Contrainte 
-// le type générique T doit être un objet 
-const addCategories = <T extends object> (obj: T) => {
-        Object.keys(obj).forEach((key) => {
-            categories.push(key)
-        })
-}
-
-addCategories(transaction1)
-addCategories(transaction2)
-
-
-// Keyof
-// un type qui équivaut à une union de types littéraux 
-// où chaque type littéral est une clé d'un autre type 
-type Book = {
-    title: string,
-    isbn: number,
-    pages: number
-}
-
-const book1 : Book = {title: "mon livre", isbn: 1244, pages: 134}
-
-type BookKeys1 = "title" | "isbn" | "pages"
-type BookKeys2 = keyof Book
-type BookKeys3 = keyof typeof book1 
-
-// containte avec keyof 
-// le type générique K doit correpondre à l'une des clé de l'objet book1
-const reverKey = <K extends keyof typeof book1> (key: K) => {
-   console.log(key.split("").reverse().join(""))
-}
-
-reverKey("pages")
-
-
-type Course = {
-    title: string, 
-    lesson: number
-}
-
-const course1 : Course = {
-    title: "TS 14",
-    lesson: 14
-}
-
-// Le type générique K doit correspondre à une clé du type générique T
-// Le type retournée par la fonction (T[K]) correspond au type de la valeur associée à clé K dans T
-const extract = <T, K extends keyof T> (data : T, key : K) : T[K]=> {
-    return data[key]
-}
-
-const courseLesson = extract(course1, "lesson" )
-const bookTitle = extract(book1, "title")
-
-const pluck = <T, K extends keyof T>(
-    items: T[], 
-    key: K 
-    ): T[K][]  => {
-    return items.map(item => item[key])
-}   
-
-const course2 : Course = {
-    title: "TS 15",
-    lesson: 16
-}
-
-const course3 : Course = {
-    title: "TS 16",
-    lesson: 16
-}
-
-const val = pluck([course1, course2, course3], "lesson")
-console.log(val)
-
-
-type AuthEvent = {
-    time: Date,
-    username: string
-    token: number
-}
-
-type AddToCart = {
-    productId: number,
-    productName: string,
-    price: number
-}
-
-type CheckoutEvent = {
-    price: number,
-    transactionId: number,
-    cardNumber: BigInt
-}
-
-type EventMap = {
-    authEvent: AuthEvent,
-    addToCartEvent: AddToCart,
-    checkoutEvent: CheckoutEvent
-}
-
-const sendEvent = <K extends keyof EventMap>(
-    eventName: K,
-    data: EventMap[K]
-): void => {
-    console.log([eventName, data])
+    return total 
 }
 
 
+const sum2 = (categories: RigidCategory) : number => {
+    let total = 0
+    for(const category in categories){
+        // total += categories[category as keyof RigidCategory] 
+        total += categories[category as keyof typeof categories] 
+    }
+
+    return total 
+}
+
+
+interface User {
+    [key: string] : string  | number | string[] | undefined
+    username: string 
+    img?: string 
+    id: number 
+    skills?: string[]
+}
+
+
+// type mappé
+type CategoryObj = {
+    description: string 
+    count: number 
+}
+
+ type categoryUnions = "books" | "films" | "musics"
+
+type MappedCategory = {
+    [K in categoryUnions ] : CategoryObj
+}
+
+
+type MappedCategory2 = {
+    [K in keyof RigidCategory] : CategoryObj
+}
+
+const mapped2 : MappedCategory2 = {
+    books: {description: "Catégorie pour les livres", count: 30},
+    films: {description: "Catégorie pour les films", count: 20},
+    games: {description: "Catégorie pour les jeux", count: 40},
+}
+
+// Type mappé générique
+type MappedCategory3<T, U> = {
+    [K in keyof T] : U
+}
+
+
+type FrenchCategories = {
+    livres: number, 
+    films: number, 
+    jeux: number
+}
+
+const mapped3 : MappedCategory3<FrenchCategories, boolean> = {
+    livres: true,
+    films: false,
+    jeux: true
+}
+
+
+// cas d'utilisation
+
+
+type Student = {
+    name: string 
+    score: number
+}
+
+const student1 = {
+    name: "paul", 
+    score: 120
+}
+
+type StudentSetters = {
+    [ K in keyof Student as `set${Capitalize<K>}`] : (v: Student[K]) => void 
+}
+
+type Setters<T> = {
+    [K in keyof T as `set${Capitalize<string & K>}`]: (v : T[K]) => void
+}
+
+
+const attachSetters = <T extends object> (
+    emptyObj: object,  
+    obj: T, 
+    setters : Setters<T>
+) : T & Setters<T> => {
+    return  Object.assign(emptyObj ,obj, setters)
+}
+
+
+const studentWithSetter = {} as Student & Setters<Student>
+
+attachSetters(studentWithSetter, student1, {
+    setName : (v: string) => studentWithSetter.name = v,
+    setScore : (v: number) => studentWithSetter.score = v 
+})
+
+studentWithSetter.setName("tom")
+console.log(student1)
+console.log(studentWithSetter)
