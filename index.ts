@@ -1,97 +1,127 @@
-class HorrorMovie  {
-    scary : boolean = true
-    scare(){
-        console.log("ce film fait peur")
+
+const logDate = (fn: Function) => {
+    return (...args: any[]) => {
+        console.log(new Date().toLocaleString())
+        return fn(...args)
+    }
+}
+
+let add = (a: number, b: number): void => {
+    console.log(a + b)
+}
+
+// add = logDate(add)
+
+// add(2, 3)
+
+
+@classDecorator1
+@classDecorator2
+class User {
+
+    @fieldDecorator
+    static description : string = "Classe utilisée pour générer des Utilisateurs"
+
+    constructor(public firstName: string, public lastName: string) { }
+
+
+    @getterDecorator1
+    @getterDecorator2("Nom complet")
+    get fullName(): string {
+        return `${this.firstName} ${this.lastName}`
+    }
+
+    @methodDecorator1
+    generateRandomPassword() {
+        console.log(window.crypto.randomUUID())
+    }
+
+    @AsyncMethodDecorator
+    async getPosts(){
+        const res = await fetch("http://jsonplaceholder.typicode.com/posts")
+        const data = await res.json()
+        return data
+    }
+
+    @AsyncMethodDecorator
+    async getPost(id : number ){
+        const res = await fetch("http://jsonplaceholder.typicode.com/posts/"+ id )
+        const data = await res.json()
+        return data
+    }
+}
+
+function methodDecorator1(originalMethod: Function, context: ClassMethodDecoratorContext) {
+    return function (this: ThisType<object>) {
+        console.log(`Méthode ${String(context.name)} - ${new Date().toLocaleDateString()}`)
+        originalMethod.call(this);
     }
 }
 
 
-class ComedyMovie  {
-    funny : boolean = true
-    
-    makeLaugh(){
-        console.log(`ce film fait rire`)
+
+function AsyncMethodDecorator (originalMethod: Function, context: ClassMethodDecoratorContext) {
+        return async function (this: ThisType<object>, ...args : any[]) {
+            console.time(String(context.name))
+            const post = await originalMethod.apply(this, args)
+            console.timeEnd(String(context.name))
+            return post
+        }
     }
-}
-
-// class HorrorComedyMovie extends Movie, Horror {
-
-// }
 
 
-type Class = new (...args : any[])=> any; 
-
-const ComedyMovieMixin =  <T extends Class> (baseClass : T) => {
-    return class extends baseClass {
-        funny : boolean = true
-    
-        makeLaugh(){
-            console.log(`ce film fait rire`)
+function fieldDecorator(target: any, context: ClassFieldDecoratorContext<ThisType<object>, string>) {
+    if (context.static) {
+        return function (prop: string) {
+            return prop.toUpperCase()
         }
     }
 }
 
-const HorrorMovieMixin =  <T extends Class> (baseClass : T) => {
-    return class extends baseClass {
-        scary : boolean = true
-        scare(){
-            console.log("ce film fait peur")
+function getterDecorator1 (getter: Function, context: ClassGetterDecoratorContext) {
+    return function(this: ThisType<object>){
+       return getter.call(this).toUpperCase()
+    }
+}
+
+function getterDecorator2 (val: string) {
+    return function(getter: Function, context: ClassGetterDecoratorContext){
+        return function (this : ThisType<object>){
+           return val  + " : " + getter.call(this)
         }
     }
 }
 
 
-const HorrorComedyMovie = ComedyMovieMixin(HorrorMovieMixin(
-    class {}
-))
+function classDecorator1(originalClass: (new (...args: any[]) => any), context: ClassDecoratorContext): void {
+    originalClass.prototype.date = new Date().toLocaleString()
+}
 
-const film = new HorrorComedyMovie()
-
-
-
-const MiniDBMixin= <T extends Class, U> (baseClass: T) => {
-    return class extends baseClass {
-        protected db : Record<string, U> = {}
-    
-        set(key: string, val: U): void {
-            this.db[key] = val 
-        }
-
-        get(): Record<string, U> {
-            return this.db
-        }
+// Version Mixin
+function classDecorator2<T extends (new (...args: any[]) => any)>(base: T, context: ClassDecoratorContext) {
+    return class extends base {
+        date = new Date().toLocaleString()
     }
 }
 
-const PersistantDBMixin = <T extends Class, U> (baseClass: T) => {
-    return class extends baseClass {
-        protected db : Record<string, U> = {}
-        save() : string {
-           return  JSON.stringify(this.db)
-        }
-    
-        load(str : string) : void {
-            this.db = JSON.parse(str)
-        }
-    }
-}
 
-let DB = PersistantDBMixin(MiniDBMixin(class {}))
+const user = new User("tom", "bombadil")
 
-const myDB = new DB()
 
-myDB.set("user", {username: "paul"})
-myDB.set("post", {title: "Article 1"})
-myDB.set("comment", {comment: "hey !"})
+user.generateRandomPassword()
 
-console.log(myDB.get())
+console.log(User.description)
 
-const saved = myDB.save()
+console.log(user.fullName)
 
-myDB.set("user", {username: "tom"})
+console.log(user);
 
-console.log(myDB.get())
 
-myDB.load(saved)
+(async () => {
+    const posts = await user.getPosts()
+    console.log(posts)
 
-console.log(myDB.get())
+    const post = await user.getPost(3)
+    console.log(post)
+})()
+
