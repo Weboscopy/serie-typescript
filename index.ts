@@ -1,227 +1,153 @@
-const strState = (initial: string) : [() => string, (v: string) => void] => {
-    let val = initial 
-    return [
-        () => val,
-        (v: string) => val = v
-    ]
-}
-
-
-const numberState = (initial: number) : [() => number, (v: number) => void] => {
-    let val = initial 
-    return [
-        () => val,
-        (v: number) => val = v
-    ]
-}
-
-const booleanState = (initial: boolean) : [() => boolean, (v: boolean) => void] => {
-    let val = initial 
-    return [
-        () => val,
-        (v: boolean) => val = v
-    ]
-}
-
-const [username, setUsername] = strState("tom")
-const [getAge, setAge] = numberState(18)
-const [isActive, setIsActive] = booleanState(true)
-
-console.log(username())
-setUsername("paul")
-console.log(username())
-
-// Fonction générique
-
-const state = <T> (initial: T) : [() => T, (v: T) => void] => {
-    let val = initial 
-    return [
-        () => val,
-        (v: T) => val = v
-    ]
-}
-
-const [password, setPassword] = state("230404034")
-const [loading, setLoading] = state(true)
-const [img, setImg] = state<string>("default.jpg")
-const [room, setRoom] = state<number | null >(null)
-
-setRoom(23)
-console.log(room())
-setRoom(null)
-
-
-type Score = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 
-class ScoreCollection {
-    constructor(public data: Score[]){}
-
-    get (index: number): Score {
-        return this.data[index]
-    }
-
-    sortCollection (): Score[]{
-       return this.data.sort()
-    }
-}
-
-type Grade = "A" | "B" | "C" | "D" | "E" | "F" 
-
-class GradesCollection {
-    constructor(public data: Grade[]){}
-
-    get (index: number): Grade{
-        return this.data[index]
-    }
-
-    sortCollection(): Grade[]{
-       return this.data.sort()
-    }
-}
-
-// Classe générique
-
-class Collection <T> {
-    constructor(public data : T[]){}
-
-    get(index: number): T{
-        return this.data[index]
-    }
-
-    sortCollection(): T[]{
-        return this.data.sort()
-    }
-}
-
-const scores = new Collection<Score>([8, 4, 1])
-const grades = new Collection<Grade>(["F", "D", "B"])
-
-const collection = new Collection<boolean> ([true, true, false, false])
-
-console.log(scores.sortCollection())
-console.log(grades.sortCollection())
-
-// Alias générique
-type ResAlias <T> = {
-    data: T,
-    status: boolean 
-}
-
-
-const sendJSON = <T> (res: ResAlias<T>): string  => {
-    if(res.status){
-        return JSON.stringify(res.data)
-    }
-
-    throw new Error("impossible de récupéréer les données")
-}
-
 type User = {
+    id: number,
+    username: string,
+    email: string
+}
+
+type Product = {
+    id: number,
+    productName: string,
+    price: number
+}
+
+interface HasId {
     id: number
-    name: string
 }
 
-const user : User = {
-    id: 1,
-    name: "tom"
-}
+// Contrainte 
+// le type générique T doit avoir une propriété id de type nombre
+class Collection<T extends HasId> {
+    constructor(public data: T[]) { }
 
-const product = {
-    productName: "t-shirt",
-    description : "super t-shirt"
-}
+    findOne(id: number): T {
+        const el = this.data.find(v => v.id === id)
+        if (el) {
+            return el
+        }
 
-sendJSON({data: "text", status: true})
-
-sendJSON<User>({data :user , status: true})
-
-sendJSON<typeof product>({data: product, status: true})
-
-
-// interface générique 
-
-interface Filterable <T>{
-    filterValue: T 
-    filterCollection(): T[]
-}
-
-class TemperatureCollection  implements Filterable<number>{
-    constructor(public data: number[], public filterValue: number){}
-
-    filterCollection(): number[]{
-        return this.data.filter(val => val > this.filterValue)
+        throw new Error("The item does not exist")
     }
 }
 
-class NamesCollection implements Filterable<string> {
-    constructor(public data: string[], public filterValue: string){}
+const userCollection = new Collection<User>([
+    { id: 1, username: "Paul", email: "paul@mail.com" },
+    { id: 2, username: "tom", email: "tom@mail.com" }
+]
+)
 
-    filterCollection(): string[]{
-        return this.data.filter(val => val.includes(this.filterValue))
-    }
+console.log(userCollection.findOne(2))
+
+
+let categories : string[] = []
+
+let transaction1 = {shirt: 40, baskets: 90, tShirt: 40}
+let transaction2 = {films: 20, books: 10, games: 40}
+
+// Contrainte 
+// le type générique T doit être un objet 
+const addCategories = <T extends object> (obj: T) => {
+        Object.keys(obj).forEach((key) => {
+            categories.push(key)
+        })
 }
 
+addCategories(transaction1)
+addCategories(transaction2)
 
-// Plusieurs génériques
 
-type PostProps = {
-    title: string, 
-    content: string, 
-}
-
-type BookProps = {
+// Keyof
+// un type qui équivaut à une union de types littéraux 
+// où chaque type littéral est une clé d'un autre type 
+type Book = {
     title: string,
-    pages: number,
+    isbn: number,
+    pages: number
 }
 
-class Post {
+const book1 : Book = {title: "mon livre", isbn: 1244, pages: 134}
 
-    slug: string = this.title.toLowerCase().replace(/[\s]+/g, "-")
-    private constructor( public title: string, public content: string){}
+type BookKeys1 = "title" | "isbn" | "pages"
+type BookKeys2 = keyof Book
+type BookKeys3 = keyof typeof book1 
 
-    static build(props: PostProps): Post{
-       return new Post(props.title, props.content)
-    }
+// containte avec keyof 
+// le type générique K doit correpondre à l'une des clé de l'objet book1
+const reverKey = <K extends keyof typeof book1> (key: K) => {
+   console.log(key.split("").reverse().join(""))
 }
 
+reverKey("pages")
 
-class Book {
-    isbn : number = new Date().getTime()
-    private constructor(public title: string, public pages: number){}
 
-    static build(props: BookProps) : Book{
-        return new Book(props.title, props.pages)
-    }
-
+type Course = {
+    title: string, 
+    lesson: number
 }
 
-
-class List   <T, U> {
-    list : T[] = [] 
-
-    constructor(
-        public build : (props: U) => T
-    ){}
-
-    addItem(item: U): void{
-        this.list.push(this.build(item))
-    }
-
-    get (): T[] {
-        return this.list
-    }
+const course1 : Course = {
+    title: "TS 14",
+    lesson: 14
 }
 
+// Le type générique K doit correspondre à une clé du type générique T
+// Le type retournée par la fonction (T[K]) correspond au type de la valeur associée à clé K dans T
+const extract = <T, K extends keyof T> (data : T, key : K) : T[K]=> {
+    return data[key]
+}
 
-const postList = new List((props: PostProps) => Post.build(props))
-const bookList = new List((props: BookProps) => Book.build(props))
+const courseLesson = extract(course1, "lesson" )
+const bookTitle = extract(book1, "title")
 
-postList.addItem({title: "Mon  premier post", content: " Mon Super Contenu"})
-postList.addItem({title: "Mon second post", content: " Mon Super Second Livre"})
+const pluck = <T, K extends keyof T>(
+    items: T[], 
+    key: K 
+    ): T[K][]  => {
+    return items.map(item => item[key])
+}   
 
-bookList.addItem({title: "Mon premier livre", pages: 23})
-bookList.addItem({title: "Mon second livre", pages: 49})
+const course2 : Course = {
+    title: "TS 15",
+    lesson: 16
+}
 
-console.log(postList.get())
+const course3 : Course = {
+    title: "TS 16",
+    lesson: 16
+}
 
-console.log(bookList.get())
+const val = pluck([course1, course2, course3], "lesson")
+console.log(val)
+
+
+type AuthEvent = {
+    time: Date,
+    username: string
+    token: number
+}
+
+type AddToCart = {
+    productId: number,
+    productName: string,
+    price: number
+}
+
+type CheckoutEvent = {
+    price: number,
+    transactionId: number,
+    cardNumber: BigInt
+}
+
+type EventMap = {
+    authEvent: AuthEvent,
+    addToCartEvent: AddToCart,
+    checkoutEvent: CheckoutEvent
+}
+
+const sendEvent = <K extends keyof EventMap>(
+    eventName: K,
+    data: EventMap[K]
+): void => {
+    console.log([eventName, data])
+}
+
 
